@@ -16,7 +16,8 @@ namespace MiniCactpotSolver;
 /// 6 = major diagonal
 /// 7 = minor diagonal
 /// </summary>
-internal sealed class PerfectCactpot {
+internal sealed class PerfectCactpot
+{
     public const int TotalNumbers = 9;
     public const int TotalLanes = 8;
 
@@ -108,7 +109,8 @@ internal sealed class PerfectCactpot {
         { "000000009", (1517.7214285714285, [false, false, true,  false, true,  false, true,  false, false]) },
     };
 
-    internal bool[] Solve(int[] state) {
+    internal bool[] Solve(int[] state)
+    {
         // Count how many are visible
         var num_revealed = state.Count(x => x > 0);
 
@@ -121,44 +123,48 @@ internal sealed class PerfectCactpot {
         double value;
         var which_to_flip = new bool[num_options];
 
-        switch (num_revealed) {
+        switch (num_revealed)
+        {
             case 0:
                 // You don't get to choose the first spot, but here's the answer anyway
                 return [true, false, true, false, false, false, true, false, true];
 
-            case 1: {
-                // This will take a long time, but we have no choice
-                // value = SolveAny(ref state, ref tiles);
+            case 1:
+                {
+                    // This will take a long time, but we have no choice
+                    // value = SolveAny(ref state, ref tiles);
 
-                // Using our pre-calculated library, this is much faster
-                var stateStr = string.Join("", state);
-                (value, which_to_flip) = PrecalculatedOpenings[stateStr];
-                break;
-            }
+                    // Using our pre-calculated library, this is much faster
+                    var stateStr = string.Join("", state);
+                    (value, which_to_flip) = PrecalculatedOpenings[stateStr];
+                    break;
+                }
 
             default:
                 value = SolveAny(ref state, ref which_to_flip);
                 break;
         }
 
-        Service.Log.Verbose($"Expected value: {value} MGP");
-
         return which_to_flip;
     }
 
-    private double SolveAny(ref int[] state, ref bool[] options) {
+    private double SolveAny(ref int[] state, ref bool[] options)
+    {
         var dummy_array = new bool[options.Length];
         var hiddenNumbers = new List<int>();
         var ids = new List<int>();
         var has = new int[10];
         var tot_win = new List<double>();
-        for (var i = 0; i < 9; i++) {
-            if (state[i] == 0) {
+        for (var i = 0; i < 9; i++)
+        {
+            if (state[i] == 0)
+            {
                 // Storing the ids of all locations which are currently unrevealed
                 ids.Add(i);
                 tot_win.Add(0);
             }
-            else {
+            else
+            {
                 // Checking which numbers are currently visible
                 has[state[i]] = 1;
             }
@@ -169,21 +175,26 @@ internal sealed class PerfectCactpot {
 
         // From the previous step, we know which numbers are not yet visible:
         //  these are the possible unknowns
-        for (var i = 1; i <= 9; i++) {
-            if (has[i] == 0) {
+        for (var i = 1; i <= 9; i++)
+        {
+            if (has[i] == 0)
+            {
                 hiddenNumbers.Add(i);
             }
         }
 
-        if (num_revealed >= 4) {
+        if (num_revealed >= 4)
+        {
             // We've revealed as many numbers as we can -- time for the final assessment
             var permutations = 0;
             tot_win = [0, 0, 0, 0, 0, 0, 0, 0,];
             // One for each row, column, and diagonal
             // Loop over all possible permutations on the unknowns
-            do {
+            do
+            {
                 permutations++;
-                for (var i = 0; i < ids.Count; i++) {
+                for (var i = 0; i < ids.Count; i++)
+                {
                     state[ids[i]] = hiddenNumbers[i];
                 }
 
@@ -201,16 +212,19 @@ internal sealed class PerfectCactpot {
             // Find the maximum. Start by assuming option 0 is best.
             var currentMax = tot_win[0];
             options[0] = true;
-            for (var i = 1; i < 8; i++) {
+            for (var i = 1; i < 8; i++)
+            {
                 // If another row yielded a higher expected value:
-                if (tot_win[i] > currentMax) {
+                if (tot_win[i] > currentMax)
+                {
                     // Mark all the previous rows as FALSE (not optimal) and the current one as TRUE
                     currentMax = tot_win[i];
                     for (var j = 0; j < i; j++)
                         options[j] = false;
                     options[i] = true;
                 }
-                else if (Math.Abs(tot_win[i] - currentMax) < 0.1f) {
+                else if (Math.Abs(tot_win[i] - currentMax) < 0.1f)
+                {
                     // For a tie, mark the current one as TRUE, and leave the previous ones intact
                     options[i] = true;
                 }
@@ -219,12 +233,15 @@ internal sealed class PerfectCactpot {
             // Divide by that number to get the actual expected value.
             return currentMax / permutations;
         }
-        else {
+        else
+        {
             // Determine which tile to reveal next.
             // Loop over every unknown tile and every possible value that could appear.
             // Solve the resulting cases with a recursive call to solve_any.
-            for (var i = 0; i < num_hidden; i++) {
-                for (var j = 0; j < num_hidden; j++) {
+            for (var i = 0; i < num_hidden; i++)
+            {
+                for (var j = 0; j < num_hidden; j++)
+                {
                     state[ids[i]] = hiddenNumbers[j];
                     tot_win[i] += SolveAny(ref state, ref dummy_array);
                     for (var k = 0; k < num_hidden; k++)
@@ -233,14 +250,17 @@ internal sealed class PerfectCactpot {
             }
             var currentMax = tot_win[0];
             options[ids[0]] = true;
-            for (var i = 1; i < tot_win.Count; i++) {
-                if (tot_win[i] > currentMax + EPS) {
+            for (var i = 1; i < tot_win.Count; i++)
+            {
+                if (tot_win[i] > currentMax + EPS)
+                {
                     currentMax = tot_win[i];
                     for (var j = 0; j < i; j++)
                         options[ids[j]] = false;
                     options[ids[i]] = true;
                 }
-                else if (tot_win[i] > currentMax - EPS) {
+                else if (tot_win[i] > currentMax - EPS)
+                {
                     options[ids[i]] = true;
                 }
             }
@@ -251,7 +271,8 @@ internal sealed class PerfectCactpot {
         }
     }
 
-    private static bool NextPermutation(List<int> list) {
+    private static bool NextPermutation(List<int> list)
+    {
         var begin = 0;
         var end = list.Count;
 
@@ -260,11 +281,13 @@ internal sealed class PerfectCactpot {
 
         var i = list.Count - 1;
 
-        while (true) {
+        while (true)
+        {
             var j = i;
             i--;
 
-            if (list[i] < list[j]) {
+            if (list[i] < list[j])
+            {
                 var k = end;
 
                 while (list[i] >= list[--k]) { }
@@ -274,25 +297,29 @@ internal sealed class PerfectCactpot {
                 return true;
             }
 
-            if (i == begin) {
+            if (i == begin)
+            {
                 Reverse(list, begin, end);
                 return false;
             }
         }
     }
 
-    private static void Reverse<T>(List<T> list, int begin, int end) {
+    private static void Reverse<T>(List<T> list, int begin, int end)
+    {
         var count = end - begin;
 
         var reversedSlice = list.GetRange(begin, count);
         reversedSlice.Reverse();
 
-        for (var i = 0; i < reversedSlice.Count; i++) {
+        for (var i = 0; i < reversedSlice.Count; i++)
+        {
             list[begin + i] = reversedSlice[i];
         }
     }
 
-    private static void Swap<T>(IList<T> list, int i1, int i2) {
+    private static void Swap<T>(IList<T> list, int i1, int i2)
+    {
         (list[i1], list[i2]) = (list[i2], list[i1]);
     }
 }
