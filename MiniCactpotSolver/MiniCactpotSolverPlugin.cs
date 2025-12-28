@@ -1,3 +1,5 @@
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -11,6 +13,8 @@ namespace MiniCactpotSolver;
 public sealed class MiniCactpotPlugin : IDalamudPlugin
 {
     public static string Name => "ezMiniCactpot";
+
+    public static MiniCactpotPlugin? Instance;
 
     //
 
@@ -31,6 +35,9 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
     internal IGameGui GameGui { get; init; }
     internal IPluginLog Log { get; init; }
 
+    private readonly WindowSystem WindowSystem;
+    private readonly SettingsWindow _settingsWindow;
+
     //
 
     public MiniCactpotPlugin(
@@ -50,12 +57,32 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
         GameGui = gameGui;
         Log = pluginLog;
 
+        WindowSystem = new(Name);
+        _settingsWindow = new SettingsWindow(this);
+        WindowSystem.AddWindow(_settingsWindow);
+
+        Interface.UiBuilder.Draw += DrawUI;
+        Interface.UiBuilder.OpenConfigUi += ShowSettingsWindow;
         Framework.Update += FrameworkLotteryPoll;
+
+        Instance = this;
     }
 
     public void Dispose()
     {
+        Interface.UiBuilder.OpenConfigUi -= ShowSettingsWindow;
+        Interface.UiBuilder.Draw -= DrawUI;
         Framework.Update -= FrameworkLotteryPoll;
+    }
+
+    public void ShowSettingsWindow()
+    {
+        _settingsWindow.IsOpen = true;
+    }
+
+    private void DrawUI()
+    {
+        WindowSystem.Draw();
     }
 
     //
@@ -93,10 +120,10 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
     {
         var ready = false;
         var isVisible = false;
-
         AddonLotteryDaily* addon = (AddonLotteryDaily*)addonPtr;
 
-        if (addon->AtkUnitBase.RootNode is null)
+        var rootNode = addon->AtkUnitBase.RootNode;
+        if (rootNode != null)
         {
             isVisible = addon->AtkUnitBase.IsVisible;
             ready = true;
@@ -189,3 +216,4 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
         }
     }
 }
+
