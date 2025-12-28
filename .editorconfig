@@ -1,4 +1,0 @@
-﻿[*.cs]
-
-# IDE0042: Deconstruct variable declaration
-dotnet_diagnostic.IDE0042.severity = silent
