@@ -3,4 +3,4 @@ name: ezMiniCactpot
 punchline: Shows the next best move in Mini Cactpot.
 description: Highlights the tiles and lines in the MiniCactpot board that represent the next best potential move you can make. Maximizing your MGP reward!
 repo_url: https://github.com/Etheirys/EzMiniCactpot
-AcceptsFeedback: false
+AcceptsFeedback: true
