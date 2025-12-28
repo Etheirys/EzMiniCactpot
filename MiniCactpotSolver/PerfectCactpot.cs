@@ -1,12 +1,15 @@
+
+//
+// This is from https://super-aardvark.github.io/yuryu/
+//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-// ReSharper disable InconsistentNaming
 
 namespace MiniCactpotSolver;
 
 /// <summary>
-/// https://super-aardvark.github.io/yuryu/
 /// 0 = top row
 /// 1 = middle row
 /// 2 = bottom row
