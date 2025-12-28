@@ -1,6 +1,6 @@
-author: daemitus, MidoriKami
+author: daemitus, Minmoose, MidoriKami
 name: ezMiniCactpot
 punchline: Shows the next best move in Mini Cactpot.
-description: This plugin highlights tiles and lines in MiniCactpot that represent the best potential action you can take.
-repo_url: https://github.com/MidoriKami/MiniCactpotSolver
+description: Highlights the tiles and lines in the MiniCactpot board that represent the next best potential move you can make. Maximizing your MGP reward!
+repo_url: https://github.com/Etheirys/EzMiniCactpot
 AcceptsFeedback: false
