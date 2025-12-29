@@ -1,5 +1,4 @@
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -14,16 +13,9 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
 {
     public static string Name => "ezMiniCactpot";
 
-    public static MiniCactpotPlugin? Instance;
-
     //
 
-    private Task? GameTask;
-    private readonly PerfectCactpot PerfectCactpot = new();
-
-    private const int TotalNumbers = PerfectCactpot.TotalNumbers;
-    private const int TotalLanes = PerfectCactpot.TotalLanes;
-    private int[] GameState = new int[TotalNumbers];
+    public ConfigurationService Configuration => _configuration;
 
     //
 
@@ -35,8 +27,9 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
     internal IGameGui GameGui { get; init; }
     internal IPluginLog Log { get; init; }
 
-    private readonly WindowSystem WindowSystem;
-    private readonly SettingsWindow _settingsWindow;
+    //
+
+    private readonly ConfigurationService _configuration;
 
     //
 
@@ -57,37 +50,27 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
         GameGui = gameGui;
         Log = pluginLog;
 
-        WindowSystem = new(Name);
-        _settingsWindow = new SettingsWindow(this);
-        WindowSystem.AddWindow(_settingsWindow);
+        _configuration = new ConfigurationService(Interface);
 
-        Interface.UiBuilder.Draw += DrawUI;
-        Interface.UiBuilder.OpenConfigUi += ShowSettingsWindow;
         Framework.Update += FrameworkLotteryPoll;
-
-        Instance = this;
     }
 
     public void Dispose()
     {
-        Interface.UiBuilder.OpenConfigUi -= ShowSettingsWindow;
-        Interface.UiBuilder.Draw -= DrawUI;
         Framework.Update -= FrameworkLotteryPoll;
     }
 
-    public void ShowSettingsWindow()
-    {
-        _settingsWindow.IsOpen = true;
-    }
-
-    private void DrawUI()
-    {
-        WindowSystem.Draw();
-    }
 
     //
     //
     //
+
+    private Task? GameTask;
+    private readonly PerfectCactpot PerfectCactpot = new();
+
+    private const int TotalNumbers = PerfectCactpot.TotalNumbers;
+    private const int TotalLanes = PerfectCactpot.TotalLanes;
+    private int[] GameState = new int[TotalNumbers];
 
     private void FrameworkLotteryPoll(IFramework framework)
     {
@@ -142,7 +125,7 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
 
         var gameState = GetGameState(addon);
 
-        if (!Enumerable.SequenceEqual(gameState, GameState))
+        if (Enumerable.SequenceEqual(gameState, GameState) is false)
         {
             GameState = gameState;
 
@@ -195,12 +178,12 @@ public sealed class MiniCactpotPlugin : IDalamudPlugin
         [.. Enumerable.Range(0, TotalNumbers).Select(i => addon->GameNumbers[i])];
 
     private unsafe void ToggleGameNode(AddonLotteryDaily* addon, int i, bool enable)
-        => ToggleNode(addon->GameBoard[i]->AtkComponentButton.AtkComponentBase.OwnerNode, enable);
+        => ToggleNode(addon->GameBoard[i]->AtkComponentButton.AtkComponentBase.OwnerNode, enable, isLane: false);
 
     private unsafe void ToggleLaneNode(AddonLotteryDaily* addon, int i, bool enable)
-        => ToggleNode(addon->LaneSelector[i]->AtkComponentButton.AtkComponentBase.OwnerNode, enable);
+        => ToggleNode(addon->LaneSelector[i]->AtkComponentButton.AtkComponentBase.OwnerNode, enable, isLane: true);
 
-    private unsafe void ToggleNode(AtkComponentNode* node, bool enable)
+    private unsafe void ToggleNode(AtkComponentNode* node, bool enable, bool isLane)
     {
         if (enable)
         {
