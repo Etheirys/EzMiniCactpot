@@ -1,5 +1,6 @@
 
-# EzMiniCactpotSolver
+# EzMiniCactpotSolver 
+[![Download count](https://img.shields.io/endpoint?url=https://qzysathwfhebdai6xgauhz4q7m0mzmrf.lambda-url.us-east-1.on.aws/MiniCactpotSolver)](https://github.com/Etheirys/EzMiniCactpot)
 
 This is a Dalamud plugin that highlights the best choices on your Mini Cactpot ticket!
 
